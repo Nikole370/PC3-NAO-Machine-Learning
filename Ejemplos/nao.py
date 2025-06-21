@@ -2,8 +2,8 @@
 # NAO + modelo IA
 
 from naoqi import ALProxy
-import joblib
-import numpy as np
+#import joblib
+#import numpy as np
 
 # Conectamos al robot
 ROBOT_IP = "192.168.X.X"  # Cambia por el IP de tu NAO
@@ -13,13 +13,14 @@ tts = ALProxy("ALTextToSpeech", ROBOT_IP, PORT)
 motion = ALProxy("ALMotion", ROBOT_IP, PORT)
 
 # Cargamos el modelo entrenado
-clf = joblib.load('modelo_senales.pkl')
+# clf = joblib.load('modelo_senales.pkl')
 
-# Simulamos un input (esto lo cambiarás por tus features reales)
-input_features = np.random.rand(1, 64)  # Solo como ejemplo
+# # Simulamos un input (esto lo cambiarás por tus features reales)
+# input_features = np.random.rand(1, 64)  # Solo como ejemplo
 
-# Hacemos la predicción
-pred = clf.predict(input_features)[0]
+# # Hacemos la predicción
+# pred = clf.predict(input_features)[0]
+pred = 0
 
 # Mapear la predicción a la acción
 if pred == 0:
