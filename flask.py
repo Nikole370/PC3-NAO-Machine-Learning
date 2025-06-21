@@ -7,7 +7,7 @@ import time
 from PIL import Image  # del módulo PIL de Python 2: `pip install PIL` si no lo tienes
 
 
-ROBOT_IP = "192.168.108.90"
+ROBOT_IP = "169.254.206.34"
 ROBOT_PORT = 9559
 temp_path = "temp.jpg"
 

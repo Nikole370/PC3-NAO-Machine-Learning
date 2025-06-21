@@ -1,57 +1,63 @@
 # -*- coding: utf-8 -*-
 import sys
 import cv2
-import numpy as np
-import math
+import mediapipe as mp
 
-def detect_fingers(image_path):
-    image = cv2.imread(image_path)
-    if image is None:
-        print("no hay iamgen!!!")
-        return
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (35, 35), 0)
-    _, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU) #umbral dinamico
-    contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+def detect_fingers(image_path, output_path="output.png"):
+    # Inicializa MediaPipe Hands
+    mp_hands = mp.solutions.hands
+    hands = mp_hands.Hands(
+        static_image_mode=True,
+        max_num_hands=1,
+        min_detection_confidence=0.7
+    )
+    mp_draw = mp.solutions.drawing_utils
 
-    # Visualiza todos los contornos encontrados
-    if len(contours) > 0:
-        cv2.drawContours(image, contours, -1, (255,0,0), 2)
-        cv2.imshow("Todos los contornos", image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    FINGER_TIPS = [4, 8, 12, 16, 20]
 
-        cnt = max(contours, key=cv2.contourArea)
-        hull = cv2.convexHull(cnt, returnPoints=False)
-        if hull is not None and len(hull) > 3 and len(cnt) >= 5:
-            defects = cv2.convexityDefects(cnt, hull)
-            if defects is not None:
-                finger_count = 0
-                for i in range(defects.shape[0]):
-                    s, e, f, d = defects[i, 0]
-                    start = tuple(cnt[s][0])
-                    end = tuple(cnt[e][0])
-                    far = tuple(cnt[f][0])
-                    a = math.dist(end, start)
-                    b = math.dist(far, start)
-                    c = math.dist(end, far)
-                    if b != 0 and c != 0:
-                        angle = math.acos((b**2 + c**2 - a**2) / (2 * b * c))
-                        if d > 1000 and angle <= math.pi / 2:
-                            finger_count += 1
-                            cv2.circle(image, far, 5, (0,0,255), -1)
+    frame = cv2.imread(image_path)
+    if frame is None:
+        print("No hay imagen!")
+        return None
 
-                print(finger_count + 1)
-                cv2.drawContours(image, [cnt], -1, (0,255,0), 2)
-                cv2.imshow("Contours and defects", image)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-                return
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = hands.process(rgb)
 
-    print("error1")
+    finger_count = 0
+
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            landmarks = hand_landmarks.landmark
+
+            # Dedos excepto el pulgar
+            for tip_id in FINGER_TIPS[1:]:
+                if landmarks[tip_id].y < landmarks[tip_id - 2].y:
+                    finger_count += 1
+
+            # Pulgar
+            if landmarks[FINGER_TIPS[0]].x < landmarks[FINGER_TIPS[0] - 1].x:
+                finger_count += 1
+
+        # Dibuja el texto
+        cv2.putText(frame, f"Dedos levantados: {finger_count}", (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    else:
+        print("No se detectó una mano")
+
+    # Guarda la imagen con keypoints y texto
+    cv2.imwrite(output_path, frame)
+    #print(f"Imagen guardada en: {output_path}")
+    return finger_count
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("error")
+        print("Error: debes pasar el path de la imagen")
     else:
-        detect_fingers(sys.argv[1])
+        image_path = sys.argv[1]
+        output_path = "output.png"
+        count = detect_fingers(image_path, output_path)
+        if count is not None:
+            print(count)
+
