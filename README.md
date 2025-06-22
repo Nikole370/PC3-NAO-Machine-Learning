@@ -2,12 +2,10 @@
 ## 🎥 Video de demostración
 
 El siguiente video explica el objetivo del proyecto y muestra cómo el NAO integra el sistema para realizar la acción solicitada:  
-👉 [Ver video en YouTube](URL_DEL_VIDEO)
+👉 [Ver video en YouTube](https://youtu.be/JFx011HihzA)
 
 ## 🎯 Objetivo de la implementación
-<!-- Completa aquí tu objetivo -->
-<!-- Ejemplo: Detectar la cantidad de dedos levantados por el usuario frente al NAO y responder en voz alta -->
-...
+Detectar la cantidad de dedos levantados por el usuario frente al NAO y responder en voz alta 
 
 
 ## 🛠 Herramienta utilizada para la conexión
